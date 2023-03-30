@@ -3,14 +3,12 @@ package main
 import (
 	"fmt"
 	"html/template"
-	"log"
 	"net/http"
 	"strconv"
 )
 
-// Home handler function: writes a byte slice containing
-// "Hello from Snippetbox" as response body.
-func home(w http.ResponseWriter, r *http.Request) {
+// Home handler method for application struct defined in main
+func (app *application) home(w http.ResponseWriter, r *http.Request) {
 	// display home page when url is exactly '/', otherwise
 	// redirect to 404
 	if r.URL.Path != "/" {
@@ -30,7 +28,7 @@ func home(w http.ResponseWriter, r *http.Request) {
 
 	templateSet, err := template.ParseFiles(templateFiles...)
 	if err != nil {
-		log.Println(err.Error())
+		app.errorLog.Println(err.Error())
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 		return
 	}
@@ -38,12 +36,12 @@ func home(w http.ResponseWriter, r *http.Request) {
 	// serve template set
 	err = templateSet.ExecuteTemplate(w, "base", nil)
 	if err != nil {
-		log.Println(err.Error())
+		app.errorLog.Println(err.Error())
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 	}
 }
 
-func snippetView(w http.ResponseWriter, r *http.Request) {
+func (app *application) snippetView(w http.ResponseWriter, r *http.Request) {
 	// extract value of id param from url query string
 	// make sure id is a postive integer
 	id, err := strconv.Atoi(r.URL.Query().Get("id"))
@@ -54,7 +52,7 @@ func snippetView(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, "Displaying snippet with id %d", id)
 }
 
-func snippetCreate(w http.ResponseWriter, r *http.Request) {
+func (app *application) snippetCreate(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		w.Header().Set("Contet-Type", "application/json")
 		w.Header().Set("Allow", http.MethodPost)

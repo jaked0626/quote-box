@@ -7,6 +7,12 @@ import (
 	"os"
 )
 
+// define an application struct to hold application-wide dependencies
+type application struct {
+	errorLog *log.Logger
+	infoLog  *log.Logger
+}
+
 func main() {
 	// Define a new command-line flag with the name 'addr', a default value of ":4000"
 	addr := flag.String("addr", ":4000", "HTTP network address")
@@ -19,14 +25,20 @@ func main() {
 	infoLog := log.New(os.Stdout, "INFO\t", log.Ldate|log.Ltime)
 	errorLog := log.New(os.Stderr, "ERROR\t", log.Ldate|log.Ltime|log.Lshortfile)
 
+	// initialize application struct
+	app := &application{
+		errorLog: errorLog,
+		infoLog:  infoLog,
+	}
+
 	// initialize servemux and map routes to handlers
 	mux := http.NewServeMux()
 
 	// HandleFunc coerces functions into interfaces that satisfy
 	// the method ServeHTTP()
-	mux.HandleFunc("/", home)
-	mux.HandleFunc("/view", snippetView)
-	mux.HandleFunc("/create", snippetCreate)
+	mux.HandleFunc("/", app.home)
+	mux.HandleFunc("/view", app.snippetView)
+	mux.HandleFunc("/create", app.snippetCreate)
 
 	// file server for static files in ui/static/
 	fileServer := http.FileServer(http.Dir("./ui/static/"))
