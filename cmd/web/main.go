@@ -4,6 +4,7 @@ import (
 	"flag"
 	"log"
 	"net/http"
+	"os"
 )
 
 func main() {
@@ -12,6 +13,11 @@ func main() {
 
 	// Parse commandline flags passed. -addr flag value will be assigned to addr variable.
 	flag.Parse()
+
+	// create logger for writing informational and error messages
+	// include log.Lshortfile flag to include relevant file name and line number
+	infoLog := log.New(os.Stdout, "INFO\t", log.Ldate|log.Ltime)
+	errorLog := log.New(os.Stderr, "ERROR\t", log.Ldate|log.Ltime|log.Lshortfile)
 
 	// initialize servemux and map routes to handlers
 	mux := http.NewServeMux()
@@ -31,11 +37,17 @@ func main() {
 	// otherwise there will be two /statics
 	mux.Handle("/static/", http.StripPrefix("/static", fileServer))
 
-	// set up server. Pass in two parameters: TCP netweork address to listen to
-	// (:4000) and servemux created.
-	log.Printf("Starting server on %s", *addr)
+	// Initialize a new http.Server struct. Set the Addr and Handler fields
+	// the same as before, but add errorLog to ErrorLog.
+	srv := &http.Server{
+		Addr:     *addr,
+		ErrorLog: errorLog,
+		Handler:  mux,
+	}
+
+	infoLog.Printf("Starting server on %s", *addr)
 
 	// mux is treated as a chained interface
-	err := http.ListenAndServe(*addr, mux)
-	log.Fatal(err)
+	err := srv.ListenAndServe()
+	errorLog.Fatal(err)
 }

@@ -6,7 +6,7 @@ A snippet box created following Alex Edwards' *Let's Go*.
 
 ### Running on dev 
 ```bash
-go run ./cmd/web # from project root
+go run ./cmd/web -addr=":4000" # from project root
 ```
 Or simply, 
 ```bash
