@@ -1,16 +1,31 @@
 package main
 
 import (
+	"database/sql"
 	"flag"
 	"log"
 	"net/http"
 	"os"
+
+	_ "github.com/jackc/pgx/v5/stdlib"
 )
 
 // define an application struct to hold application-wide dependencies
 type application struct {
 	errorLog *log.Logger
 	infoLog  *log.Logger
+}
+
+func openDB(DBDriver string, DBSource string) (*sql.DB, error) {
+	db, err := sql.Open(DBDriver, DBSource)
+	if err != nil {
+		return nil, err
+	}
+	// check if connection is still alive
+	if err = db.Ping(); err != nil {
+		return nil, err
+	}
+	return db, nil
 }
 
 func main() {
@@ -31,6 +46,18 @@ func main() {
 		infoLog:  infoLog,
 	}
 
+	// load config
+	config := app.loadConfig("./")
+
+	// open database connection pool (only in main to save connection resources)
+	db, err := openDB(config.DBDriver, config.DBSource)
+	if err != nil {
+		app.errorLog.Fatal(err)
+	}
+
+	// defer closing the database connection until main exits
+	defer db.Close()
+
 	// Initialize a new http.Server struct. Set the Addr and Handler fields
 	// the same as before, but add errorLog to ErrorLog.
 	srv := &http.Server{
@@ -42,6 +69,6 @@ func main() {
 	infoLog.Printf("Starting server on %s", *addr)
 
 	// mux is treated as a chained interface
-	err := srv.ListenAndServe()
+	err = srv.ListenAndServe()
 	errorLog.Fatal(err)
 }
