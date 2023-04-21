@@ -10,24 +10,6 @@ import (
 	_ "github.com/jackc/pgx/v5/stdlib"
 )
 
-// define an application struct to hold application-wide dependencies
-type application struct {
-	errorLog *log.Logger
-	infoLog  *log.Logger
-}
-
-func openDB(DBDriver string, DBSource string) (*sql.DB, error) {
-	db, err := sql.Open(DBDriver, DBSource)
-	if err != nil {
-		return nil, err
-	}
-	// check if connection is still alive
-	if err = db.Ping(); err != nil {
-		return nil, err
-	}
-	return db, nil
-}
-
 func main() {
 	// Define a new command-line flag with the name 'addr', a default value of ":4000"
 	addr := flag.String("addr", ":4000", "HTTP network address")
@@ -71,4 +53,22 @@ func main() {
 	// mux is treated as a chained interface
 	err = srv.ListenAndServe()
 	errorLog.Fatal(err)
+}
+
+// define an application struct to hold application-wide dependencies
+type application struct {
+	errorLog *log.Logger
+	infoLog  *log.Logger
+}
+
+func openDB(DBDriver string, DBSource string) (*sql.DB, error) {
+	db, err := sql.Open(DBDriver, DBSource)
+	if err != nil {
+		return nil, err
+	}
+	// check if connection is still alive
+	if err = db.Ping(); err != nil {
+		return nil, err
+	}
+	return db, nil
 }
