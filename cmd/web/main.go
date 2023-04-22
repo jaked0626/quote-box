@@ -8,6 +8,7 @@ import (
 	"os"
 
 	_ "github.com/jackc/pgx/v5/stdlib"
+	"github.com/jaked0626/snippetbox/internal/util"
 )
 
 func main() {
@@ -22,14 +23,14 @@ func main() {
 	infoLog := log.New(os.Stdout, "INFO\t", log.Ldate|log.Ltime)
 	errorLog := log.New(os.Stderr, "ERROR\t", log.Ldate|log.Ltime|log.Lshortfile)
 
+	// load config
+	config := util.LoadConfig("./", errorLog)
+
 	// initialize application struct
 	app := &application{
 		errorLog: errorLog,
 		infoLog:  infoLog,
 	}
-
-	// load config
-	config := app.loadConfig("./")
 
 	// open database connection pool (only in main to save connection resources)
 	db, err := openDB(config.DBDriver, config.DBSource)
