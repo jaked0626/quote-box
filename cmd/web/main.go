@@ -18,13 +18,9 @@ func main() {
 	// Parse commandline flags passed. -addr flag value will be assigned to addr variable.
 	flag.Parse()
 
-	// create logger for writing informational and error messages
-	// include log.Lshortfile flag to include relevant file name and line number
+	// log.Lshortfile flag to include relevant file name and line number
 	infoLog := log.New(os.Stdout, "INFO\t", log.Ldate|log.Ltime)
 	errorLog := log.New(os.Stderr, "ERROR\t", log.Ldate|log.Ltime|log.Lshortfile)
-
-	// load config
-	config := util.LoadConfig("./", errorLog)
 
 	// initialize application struct
 	app := &application{
@@ -32,17 +28,20 @@ func main() {
 		infoLog:  infoLog,
 	}
 
+	// load config
+	config, err := util.LoadConfig("./")
+	if err != nil {
+		app.errorLog.Fatal(err)
+	}
+
 	// open database connection pool (only in main to save connection resources)
 	db, err := openDB(config.DBDriver, config.DBSource)
 	if err != nil {
 		app.errorLog.Fatal(err)
 	}
-
-	// defer closing the database connection until main exits
 	defer db.Close()
 
-	// Initialize a new http.Server struct. Set the Addr and Handler fields
-	// the same as before, but add errorLog to ErrorLog.
+	// Initialize a new http.Server struct.
 	srv := &http.Server{
 		Addr:     *addr,
 		ErrorLog: errorLog,
