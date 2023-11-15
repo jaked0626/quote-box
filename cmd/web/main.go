@@ -2,12 +2,12 @@ package main
 
 import (
 	"database/sql"
-	"flag"
 	"log"
 	"net/http"
 	"os"
 
 	_ "github.com/jackc/pgx/v5/stdlib"
+	"github.com/jaked0626/snippetbox/internal/config"
 )
 
 // define an application struct to hold application-wide dependencies
@@ -29,46 +29,31 @@ func openDB(DBDriver string, DBSource string) (*sql.DB, error) {
 }
 
 func main() {
-	// Define a new command-line flag with the name 'addr', a default value of ":4000"
-	addr := flag.String("addr", ":4000", "HTTP network address")
-
-	// Parse commandline flags passed. -addr flag value will be assigned to addr variable.
-	flag.Parse()
-
-	// create logger for writing informational and error messages
-	// include log.Lshortfile flag to include relevant file name and line number
+	config := config.LoadConfig()
 	infoLog := log.New(os.Stdout, "INFO\t", log.Ldate|log.Ltime)
 	errorLog := log.New(os.Stderr, "ERROR\t", log.Ldate|log.Ltime|log.Lshortfile)
 
-	// initialize application struct
+	// application struct holds application wide variables
 	app := &application{
 		errorLog: errorLog,
 		infoLog:  infoLog,
 	}
-
-	// load config
-	config := app.loadConfig("./")
 
 	// open database connection pool (only in main to save connection resources)
 	db, err := openDB(config.DBDriver, config.DBSource)
 	if err != nil {
 		app.errorLog.Fatal(err)
 	}
-
-	// defer closing the database connection until main exits
 	defer db.Close()
 
-	// Initialize a new http.Server struct. Set the Addr and Handler fields
-	// the same as before, but add errorLog to ErrorLog.
 	srv := &http.Server{
-		Addr:     *addr,
+		Addr:     config.Addr,
 		ErrorLog: errorLog,
-		Handler:  app.routeMux(), // returns mux
+		Handler:  app.routeMux(),
 	}
 
-	infoLog.Printf("Starting server on %s", *addr)
+	infoLog.Printf("Starting server on %s", config.Addr)
 
-	// mux is treated as a chained interface
 	err = srv.ListenAndServe()
 	errorLog.Fatal(err)
 }
