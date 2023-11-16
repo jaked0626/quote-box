@@ -3,6 +3,9 @@ include app.env
 serve:
 	go run ./cmd/web -addr=${HTTP_TARGET_ADDRESS} -dbsource=${DB_SOURCE}
 
+serve_log:
+	go run ./cmd/web -addr=${HTTP_TARGET_ADDRESS} -dbsource=${DB_SOURCE} >>./tmp/info.log 2>>./tmp/error.log
+
 container:
 	docker run --name snippet_pg -p ${DB_PORT}:${DB_PORT} -e POSTGRES_USER=${DB_USER} -e POSTGRES_PASSWORD=${DB_PASSWORD} -d postgres:14-alpine
 

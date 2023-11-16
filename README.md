@@ -66,3 +66,8 @@ This structure cleanly separates Go and non-Go assets. Further, it scales nicely
     {{end}}
 {{end}}
 ```
+
+# BEST PRACTICE  
+- All Fatal and Panic error logs should only be called from within main. Other errors should be passed up the stack.  
+- If all handlers are in the same package, wrap all application dependencies in an application struct (data store) and define handlers as methods to the application.  
+- If handlers exist in separate packages, use a closure model 

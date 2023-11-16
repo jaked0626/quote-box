@@ -29,6 +29,8 @@ func openDB(DBDriver string, DBSource string) (*sql.DB, error) {
 }
 
 func main() {
+	// BEST PRACTICE: all fatal or panic error logs should be called from within main
+
 	config := config.LoadConfig()
 	infoLog := log.New(os.Stdout, "INFO\t", log.Ldate|log.Ltime)
 	errorLog := log.New(os.Stderr, "ERROR\t", log.Ldate|log.Ltime|log.Lshortfile)
@@ -39,7 +41,7 @@ func main() {
 		infoLog:  infoLog,
 	}
 
-	// open database connection pool (only in main to save connection resources)
+	// only open in main to save connection resources
 	db, err := openDB(config.DBDriver, config.DBSource)
 	if err != nil {
 		app.errorLog.Fatal(err)
