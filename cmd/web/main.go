@@ -8,12 +8,14 @@ import (
 
 	_ "github.com/jackc/pgx/v5/stdlib"
 	"github.com/jaked0626/snippetbox/internal/config"
+	"github.com/jaked0626/snippetbox/internal/models"
 )
 
 // define an application struct to hold application-wide dependencies
 type application struct {
 	errorLog *log.Logger
 	infoLog  *log.Logger
+	snippets *models.SnippetModel
 }
 
 func openDB(DBDriver string, DBSource string) (*sql.DB, error) {
@@ -35,18 +37,19 @@ func main() {
 	infoLog := log.New(os.Stdout, "INFO\t", log.Ldate|log.Ltime)
 	errorLog := log.New(os.Stderr, "ERROR\t", log.Ldate|log.Ltime|log.Lshortfile)
 
+	// only open in main to save connection resources
+	db, err := openDB(config.DBDriver, config.DBSource)
+	if err != nil {
+		errorLog.Fatal(err)
+	}
+	defer db.Close()
+
 	// application struct holds application wide variables
 	app := &application{
 		errorLog: errorLog,
 		infoLog:  infoLog,
+		snippets: &models.SnippetModel{DB: db},
 	}
-
-	// only open in main to save connection resources
-	db, err := openDB(config.DBDriver, config.DBSource)
-	if err != nil {
-		app.errorLog.Fatal(err)
-	}
-	defer db.Close()
 
 	srv := &http.Server{
 		Addr:     config.Addr,

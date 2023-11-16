@@ -25,6 +25,11 @@ func (app *application) notFound(w http.ResponseWriter) {
 	app.clientError(w, http.StatusNotFound)
 }
 
+// badRequest: convenience wrapper around clientError that sends a 400 Bad Request response
+func (app *application) badRequest(w http.ResponseWriter) {
+	app.clientError(w, http.StatusBadRequest)
+}
+
 // Config stores all configuration of the application.
 // The values are read by viper from a config file or environment variable.
 // type Config struct {

@@ -56,5 +56,17 @@ func (app *application) snippetCreate(w http.ResponseWriter, r *http.Request) {
 		app.clientError(w, http.StatusMethodNotAllowed)
 		return
 	}
-	w.Write([]byte("Create a new snippet..."))
+	title := r.URL.Query().Get("title")
+	content := r.URL.Query().Get("content")
+	expires, err := strconv.Atoi(r.URL.Query().Get("expires"))
+	if err != nil {
+		app.badRequest(w)
+	}
+
+	id, err := app.snippets.Insert(title, content, expires)
+	if err != nil {
+		app.serverError(w, err)
+	}
+
+	fmt.Fprintf(w, "Snippet created... id: %d", id)
 }

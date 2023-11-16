@@ -67,7 +67,12 @@ This structure cleanly separates Go and non-Go assets. Further, it scales nicely
 {{end}}
 ```
 
-# BEST PRACTICE  
+# TIPS  
 - All Fatal and Panic error logs should only be called from within main. Other errors should be passed up the stack.  
 - If all handlers are in the same package, wrap all application dependencies in an application struct (data store) and define handlers as methods to the application.  
 - If handlers exist in separate packages, use a closure model 
+- In postgres, all users are always allowed to create tables (and delete their own tables). We can restrict user permissions on specific tables that are not owned by them.  
+- https://stackoverflow.com/questions/19309416/grant-permissions-to-user-for-any-new-tables-created-in-postgresql 
+- `curl -i -X POST http://localhost:4000/snippet/create`  
+- check tables in database using `\dt+`  
+- `curl -i -X POST 'http://localhost:4000/snippet/create?title=test&content=test&expires=7'`  
