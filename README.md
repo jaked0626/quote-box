@@ -75,4 +75,4 @@ This structure cleanly separates Go and non-Go assets. Further, it scales nicely
 - https://stackoverflow.com/questions/19309416/grant-permissions-to-user-for-any-new-tables-created-in-postgresql 
 - `curl -i -X POST http://localhost:4000/snippet/create`  
 - check tables in database using `\dt+`  
-- `curl -i -X POST 'http://localhost:4000/snippet/create?title=test&content=test&expires=7'`  
+- `curl -iL -X POST 'http://localhost:4000/snippet/create?title=test&content=test&expires=7'`  
