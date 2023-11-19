@@ -72,7 +72,7 @@ func (m *SnippetModel) List(limit int) (snippets []*Snippet, err error) {
 	snippets = []*Snippet{}
 	for rows.Next() {
 		s := &Snippet{}
-		err := rows.Scan(&s.ID, &s.Title, &s.Content, &s.Created, &s.Expires)
+		err = rows.Scan(&s.ID, &s.Title, &s.Content, &s.Created, &s.Expires)
 		if err != nil {
 			return nil, err
 		}

@@ -11,18 +11,22 @@ import (
 	"github.com/jaked0626/snippetbox/internal/models"
 )
 
-// Home handler method for application struct defined in main
 func (app *application) home(w http.ResponseWriter, r *http.Request) {
-	// display home page when url is exactly '/', otherwise
-	// redirect to 404
 	if r.URL.Path != "/" {
 		app.notFound(w)
 		return
 	}
 
-	// use template.ParseFiles() to read template files into template set
-	// path is set relative to root directory, meaning we must run go mod run in
-	// the root of our project
+	// get from db
+	snippets, err := app.snippets.List(10)
+	if err != nil {
+		app.serverError(w, err)
+		return
+	}
+
+	for _, s := range snippets {
+		fmt.Fprintf(w, "%+v\n", s)
+	}
 
 	templateFiles := []string{
 		"./ui/html/base.html",
@@ -62,6 +66,23 @@ func (app *application) snippetView(w http.ResponseWriter, r *http.Request) {
 	} else if err != nil {
 		app.serverError(w, err)
 		return
+	}
+
+	templateFiles := []string{
+		"./ui/html/base.html",
+		"./ui/html/partials/nav.html",
+		"./ui/html/pages/view.html",
+	}
+
+	templateSet, err := template.ParseFiles(templateFiles...)
+	if err != nil {
+		app.serverError(w, err)
+		return
+	}
+
+	err = templateSet.ExecuteTemplate(w, "base", s)
+	if err != nil {
+		app.serverError(w, err)
 	}
 
 	// response
