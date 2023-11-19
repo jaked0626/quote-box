@@ -85,15 +85,15 @@ func (app *application) snippetView(w http.ResponseWriter, r *http.Request) {
 		app.serverError(w, err)
 	}
 
-	// response
-	res, err := json.Marshal(s)
-	if err != nil {
-		app.serverError(w, err)
-		return
-	}
-	w.Header().Set("Content-Type", "application/json")
-	w.Write(res)
-	return
+	// // response
+	// res, err := json.Marshal(s)
+	// if err != nil {
+	// 	app.serverError(w, err)
+	// 	return
+	// }
+	// w.Header().Set("Content-Type", "application/json")
+	// w.Write(res)
+	// return
 }
 
 func (app *application) snippetList(w http.ResponseWriter, r *http.Request) {
