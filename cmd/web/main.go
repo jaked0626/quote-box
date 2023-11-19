@@ -38,7 +38,7 @@ func main() {
 	errorLog := log.New(os.Stderr, "ERROR\t", log.Ldate|log.Ltime|log.Lshortfile)
 
 	// only open in main to save connection resources
-	db, err := openDB(config.DBDriver, config.DBSource)
+	db, err := db.openDB(config.DBDriver, config.DBSource)
 	if err != nil {
 		errorLog.Fatal(err)
 	}
