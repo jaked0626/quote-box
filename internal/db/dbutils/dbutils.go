@@ -1,8 +1,8 @@
-package db
+package dbutils
 
 import "database/sql"
 
-func openDB(DBDriver string, DBSource string) (*sql.DB, error) {
+func OpenDB(DBDriver string, DBSource string) (*sql.DB, error) {
 	db, err := sql.Open(DBDriver, DBSource)
 	if err != nil {
 		return nil, err

@@ -8,7 +8,8 @@ import (
 
 	_ "github.com/jackc/pgx/v5/stdlib"
 	"github.com/jaked0626/snippetbox/internal/config"
-	"github.com/jaked0626/snippetbox/internal/models"
+	"github.com/jaked0626/snippetbox/internal/db/dbutils"
+	"github.com/jaked0626/snippetbox/internal/db/models"
 )
 
 // define an application struct to hold application-wide dependencies
@@ -38,7 +39,7 @@ func main() {
 	errorLog := log.New(os.Stderr, "ERROR\t", log.Ldate|log.Ltime|log.Lshortfile)
 
 	// only open in main to save connection resources
-	db, err := db.openDB(config.DBDriver, config.DBSource)
+	db, err := dbutils.OpenDB(config.DBDriver, config.DBSource)
 	if err != nil {
 		errorLog.Fatal(err)
 	}
