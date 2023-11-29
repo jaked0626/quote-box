@@ -76,3 +76,5 @@ This structure cleanly separates Go and non-Go assets. Further, it scales nicely
 - `curl -i -X POST http://localhost:4000/snippet/create`  
 - check tables in database using `\dt+`  
 - `curl -iL -X POST 'http://localhost:4000/snippet/create?title=test&content=test&expires=7'`  
+- Use prepared statements for large and frequently repeated queries  
+- 
