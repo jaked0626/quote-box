@@ -15,7 +15,7 @@ type Config struct {
 // LoadConfig: loads configuration variables
 func LoadConfig() (config Config) {
 	flag.StringVar(&config.Addr, "addr", ":4000", "HTTP network address")
-	flag.StringVar(&config.ApiAddr, "addr", ":3000", "HTTP network address for API")
+	flag.StringVar(&config.ApiAddr, "apiaddr", ":3000", "HTTP network address for API")
 	flag.StringVar(&config.DBDriver, "drvr", "pgx", "Database driver")
 	flag.StringVar(&config.DBSource, "dsn", "", "Database source")
 	flag.StringVar(&config.MigrationURL, "mgr", "", "Migration URL")

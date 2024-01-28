@@ -21,10 +21,10 @@ createdbrole:
 	- docker exec -it snippet_pg psql -U ${DB_USER} -c "GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO ${DB_ROLE};"
 
 migrateup: 
-	- migrate -path ./internal/migration/ -database ${DB_SOURCE} -verbose up
+	- migrate -path ./internal/db/migration/ -database ${DB_SOURCE} -verbose up
 
 migratedown: 
-	- migrate -path ./internal/migration/ -database ${DB_SOURCE} -verbose down
+	- migrate -path ./internal/db/migration/ -database ${DB_SOURCE} -verbose down
 
 up: 
 	- make container 

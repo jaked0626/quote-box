@@ -35,8 +35,8 @@ func main() {
 	// BEST PRACTICE: all fatal or panic error logs should be called from within main
 
 	config := config.LoadConfig()
-	infoLog := log.New(os.Stdout, "INFO\t", log.Ldate|log.Ltime)
-	errorLog := log.New(os.Stderr, "ERROR\t", log.Ldate|log.Ltime|log.Lshortfile)
+	infoLog := log.New(os.Stdout, "API INFO\t", log.Ldate|log.Ltime)
+	errorLog := log.New(os.Stderr, "API ERROR\t", log.Ldate|log.Ltime|log.Lshortfile)
 
 	// only open in main to save connection resources
 	db, err := dbutils.OpenDB(config.DBDriver, config.DBSource)
@@ -53,12 +53,12 @@ func main() {
 	}
 
 	srv := &http.Server{
-		Addr:     config.Addr,
+		Addr:     config.ApiAddr,
 		ErrorLog: errorLog,
 		Handler:  app.routeMux(),
 	}
 
-	infoLog.Printf("Starting server on %s", config.Addr)
+	infoLog.Printf("Starting API server on %s", config.ApiAddr)
 
 	err = srv.ListenAndServe()
 	errorLog.Fatal(err)
