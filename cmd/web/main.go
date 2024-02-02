@@ -49,6 +49,7 @@ func main() {
 
 	// caching
 	cache, err := newTemplateCache()
+
 	if err != nil {
 		errorLog.Printf("Cache cannot be initialized: %v", err)
 	}
@@ -71,4 +72,22 @@ func main() {
 
 	err = srv.ListenAndServe()
 	errorLog.Fatal(err)
+}
+
+// define an application struct to hold application-wide dependencies
+type application struct {
+	errorLog *log.Logger
+	infoLog  *log.Logger
+}
+
+func openDB(DBDriver string, DBSource string) (*sql.DB, error) {
+	db, err := sql.Open(DBDriver, DBSource)
+	if err != nil {
+		return nil, err
+	}
+	// check if connection is still alive
+	if err = db.Ping(); err != nil {
+		return nil, err
+	}
+	return db, nil
 }
