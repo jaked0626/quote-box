@@ -1,0 +1,34 @@
+{{define "title"}}Submit a New Quote{{end}}
+
+{{define "main"}}
+<form action="/snippet/create" method="POST">
+    <div>
+        <label><strong>Title:</strong></label>
+        <input type='text' name='title'>
+    </div> 
+    <div>
+        <label><strong>Author:</strong></label>
+        <input type='text' name='author'>
+    </div> 
+    <div>
+        <label><strong>Work:</strong></label>
+        <input type='text' name='work'>
+    </div> 
+    <div>
+        <label><strong>Content:</strong></label>
+        <textarea name='content'></textarea> 
+    </div>
+    <div>
+        <label>Delete in:</label>
+        <input type='radio' name='expires' value='365' checked> One Year 
+        <input type='radio' name='expires' value='7'> One Week
+        <input type='radio' name='expires' value='1'> One Day
+    </div> 
+    <div>
+        <!-- Submit sends a post request to /snippet/create with form content
+        Because of our router, we already have a handler for X POST /snippet/create
+        no additional routing necessary-->
+        <input type='submit' value='Publish snippet'> 
+    </div>
+</form>
+{{end}}

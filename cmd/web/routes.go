@@ -1,26 +1,36 @@
 package main
 
-import "net/http"
+import (
+	"net/http"
 
-func (app *application) routeMux() *http.ServeMux {
-	// initialize servemux and map routes to handlers
-	mux := http.NewServeMux()
+	"github.com/julienschmidt/httprouter"
+	"github.com/justinas/alice"
+)
+
+func (app *application) routeMux() http.Handler {
+	router := httprouter.New()
 
 	// file server for static files in ui/static/
+	// need to strip prefix to avoid duplications since our requests will include
+	// /static in their paths.
 	fileServer := http.FileServer(http.Dir("./ui/static/"))
+	router.Handler(http.MethodGet, "/static/*filepath", http.StripPrefix("/static", fileServer))
 
-	// use mux.Handle() function to register the file server as the
-	// handler for all URL paths that start with "/static/". For matching paths,
-	// we strip the "/static" prefix before the request reaches the file server
-	// otherwise there will be two /statics (what the public folder implicitly does)
-	mux.Handle("/static/", http.StripPrefix("/static", fileServer))
+	router.NotFound = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		app.notFound(w)
+	})
 
 	// HandleFunc coerces functions into interfaces that satisfy
 	// the method ServeHTTP()
-	mux.HandleFunc("/", app.home)
-	mux.HandleFunc("/snippet/view", app.snippetView)
-	mux.HandleFunc("/snippet/list", app.snippetList)
-	mux.HandleFunc("/snippet/create", app.snippetCreate)
+	router.HandlerFunc(http.MethodGet, "/", app.home)
+	router.HandlerFunc(http.MethodGet, "/snippet/view/:id", app.snippetView)
+	router.HandlerFunc(http.MethodGet, "/snippet/list/:limit", app.snippetList)
+	router.HandlerFunc(http.MethodGet, "/snippet/create", app.snippetCreate)
+	router.HandlerFunc(http.MethodPost, "/snippet/create", app.snippetCreatePost)
 
-	return mux
+	// define the standard handler/middlware chain for our requests
+	// recoverPanic executed first to pick up any panics thrown by the server
+	standard := alice.New(app.recoverPanic, app.logRequest, secureHeaders)
+
+	return standard.Then(router)
 }

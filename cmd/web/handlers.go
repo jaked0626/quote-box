@@ -8,23 +8,18 @@ import (
 	"strconv"
 
 	"github.com/jaked0626/snippetbox/internal/db/models"
+	"github.com/julienschmidt/httprouter"
 )
 
 func (app *application) home(w http.ResponseWriter, r *http.Request) {
-	if r.URL.Path != "/" {
-		app.notFound(w)
-		return
-	}
-
 	snippets, err := app.snippets.List(10)
 	if err != nil {
 		app.serverError(w, err)
 		return
 	}
 
-	data := &templateData{
-		Snippets: snippets,
-	}
+	data := app.newTemplateData(r)
+	data.Snippets = snippets
 
 	app.render(w, http.StatusOK, "home.html", data)
 	return
@@ -32,7 +27,8 @@ func (app *application) home(w http.ResponseWriter, r *http.Request) {
 
 func (app *application) snippetView(w http.ResponseWriter, r *http.Request) {
 	// validate input
-	id, err := strconv.Atoi(r.URL.Query().Get("id"))
+	params := httprouter.ParamsFromContext(r.Context())
+	id, err := strconv.Atoi(params.ByName("id"))
 	if err != nil {
 		app.badRequest(w)
 		return
@@ -51,9 +47,8 @@ func (app *application) snippetView(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	data := &templateData{
-		Snippet: s,
-	}
+	data := app.newTemplateData(r)
+	data.Snippet = s
 
 	app.render(w, http.StatusOK, "view.html", data)
 
@@ -62,7 +57,8 @@ func (app *application) snippetView(w http.ResponseWriter, r *http.Request) {
 
 func (app *application) snippetList(w http.ResponseWriter, r *http.Request) {
 	// validate input
-	limit, err := strconv.Atoi(r.URL.Query().Get("limit"))
+	params := httprouter.ParamsFromContext(r.Context())
+	limit, err := strconv.Atoi(params.ByName("limit"))
 	if err != nil {
 		app.badRequest(w)
 		return
@@ -90,14 +86,21 @@ func (app *application) snippetList(w http.ResponseWriter, r *http.Request) {
 }
 
 func (app *application) snippetCreate(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodPost {
-		w.Header().Set("Allow", http.MethodPost)
-		app.clientError(w, http.StatusMethodNotAllowed)
-		return
+	data := app.newTemplateData(r)
+	app.render(w, http.StatusOK, "create.html", data)
+	return
+}
+
+func (app *application) snippetCreatePost(w http.ResponseWriter, r *http.Request) {
+	err := r.ParseForm()
+	if err != nil {
+		app.badRequest(w)
 	}
-	title := r.URL.Query().Get("title")
-	content := r.URL.Query().Get("content")
-	expires, err := strconv.Atoi(r.URL.Query().Get("expires"))
+	title := r.PostForm.Get("title")
+	// author := r.PostForm.Get("author")
+	// work := r.PostForm.Get("work")
+	content := r.PostForm.Get("content")
+	expires, err := strconv.Atoi(r.PostForm.Get("expires"))
 	if err != nil {
 		app.badRequest(w)
 		return

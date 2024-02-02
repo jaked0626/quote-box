@@ -40,6 +40,11 @@ up:
 	- sleep 2
 	- make serve
 
+seed: 
+	- curl -iL -X POST 'http://localhost:4000/snippet/create?title=SocietyOfTheSpectacle&content=InAWorldGoneTopsyTurvyTheTruthIsAMomentOfFalsehood&expires=7'
+	- curl -iL -X POST 'http://localhost:4000/snippet/create?title=GiovannisRoom&content=IWillCryAboutThisOneDay&expires=7'
+	- curl -iL -X POST 'http://localhost:4000/snippet/create?title=Nadja&content=AhNadjaNadjaMyLifeMyBane&expires=7'
+
 down:
 	- make migratedown
 	- sleep 2
