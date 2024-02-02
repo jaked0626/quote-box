@@ -2,6 +2,7 @@ package main
 
 import (
 	"database/sql"
+	"html/template"
 	"log"
 	"net/http"
 	"os"
@@ -17,6 +18,7 @@ type application struct {
 	errorLog *log.Logger
 	infoLog  *log.Logger
 	snippets *models.SnippetModel
+	cache    map[string]*template.Template
 }
 
 func openDB(DBDriver string, DBSource string) (*sql.DB, error) {
@@ -45,11 +47,18 @@ func main() {
 	}
 	defer db.Close()
 
+	// caching
+	cache, err := newTemplateCache()
+	if err != nil {
+		errorLog.Printf("Cache cannot be initialized: %v", err)
+	}
+
 	// application struct holds application wide variables
 	app := &application{
 		errorLog: errorLog,
 		infoLog:  infoLog,
 		snippets: &models.SnippetModel{DB: db},
+		cache:    cache,
 	}
 
 	srv := &http.Server{

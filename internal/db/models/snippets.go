@@ -38,7 +38,7 @@ func (m *SnippetModel) Insert(title string, content string, expires int) (id int
 
 func (m *SnippetModel) Get(id int) (s *Snippet, err error) {
 	// query db
-	qry := `SELECT id, title, content, created, expires 
+	qry := `SELECT id, title, content, created, expires
 	FROM snippets
 	WHERE expires > CURRENT_TIMESTAMP AND id = $1; `
 	row := m.DB.QueryRow(qry, id)
@@ -58,9 +58,9 @@ func (m *SnippetModel) Get(id int) (s *Snippet, err error) {
 func (m *SnippetModel) List(limit int) (snippets []*Snippet, err error) {
 	// query db
 	qry := `SELECT id, title, content, created, expires
-	FROM snippets 
+	FROM snippets
 	WHERE expires > CURRENT_TIMESTAMP
-	ORDER BY id DESC
+	ORDER BY created DESC
 	LIMIT $1`
 	rows, err := m.DB.Query(qry, limit)
 	if err != nil {

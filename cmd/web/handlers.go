@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"html/template"
 	"net/http"
 	"strconv"
 
@@ -17,34 +16,18 @@ func (app *application) home(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// get from db
 	snippets, err := app.snippets.List(10)
 	if err != nil {
 		app.serverError(w, err)
 		return
 	}
 
-	for _, s := range snippets {
-		fmt.Fprintf(w, "%+v\n", s)
+	data := &templateData{
+		Snippets: snippets,
 	}
 
-	templateFiles := []string{
-		"./ui/html/base.html",
-		"./ui/html/partials/nav.html",
-		"./ui/html/pages/home.html",
-	}
-
-	templateSet, err := template.ParseFiles(templateFiles...)
-	if err != nil {
-		app.serverError(w, err)
-		return
-	}
-
-	// serve template set
-	err = templateSet.ExecuteTemplate(w, "base", nil)
-	if err != nil {
-		app.serverError(w, err)
-	}
+	app.render(w, http.StatusOK, "home.html", data)
+	return
 }
 
 func (app *application) snippetView(w http.ResponseWriter, r *http.Request) {
@@ -68,32 +51,13 @@ func (app *application) snippetView(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	templateFiles := []string{
-		"./ui/html/base.html",
-		"./ui/html/partials/nav.html",
-		"./ui/html/pages/view.html",
+	data := &templateData{
+		Snippet: s,
 	}
 
-	templateSet, err := template.ParseFiles(templateFiles...)
-	if err != nil {
-		app.serverError(w, err)
-		return
-	}
+	app.render(w, http.StatusOK, "view.html", data)
 
-	err = templateSet.ExecuteTemplate(w, "base", s)
-	if err != nil {
-		app.serverError(w, err)
-	}
-
-	// // response
-	// res, err := json.Marshal(s)
-	// if err != nil {
-	// 	app.serverError(w, err)
-	// 	return
-	// }
-	// w.Header().Set("Content-Type", "application/json")
-	// w.Write(res)
-	// return
+	return
 }
 
 func (app *application) snippetList(w http.ResponseWriter, r *http.Request) {
@@ -136,12 +100,15 @@ func (app *application) snippetCreate(w http.ResponseWriter, r *http.Request) {
 	expires, err := strconv.Atoi(r.URL.Query().Get("expires"))
 	if err != nil {
 		app.badRequest(w)
+		return
 	}
 
 	id, err := app.snippets.Insert(title, content, expires)
 	if err != nil {
 		app.serverError(w, err)
+		return
 	}
 
 	http.Redirect(w, r, fmt.Sprintf("/snippet/view?id=%d", id), http.StatusSeeOther)
+	return
 }
