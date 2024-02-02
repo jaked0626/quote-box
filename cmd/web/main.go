@@ -1,7 +1,6 @@
 package main
 
 import (
-	"database/sql"
 	"html/template"
 	"log"
 	"net/http"
@@ -19,18 +18,6 @@ type application struct {
 	infoLog  *log.Logger
 	snippets *models.SnippetModel
 	cache    map[string]*template.Template
-}
-
-func openDB(DBDriver string, DBSource string) (*sql.DB, error) {
-	db, err := sql.Open(DBDriver, DBSource)
-	if err != nil {
-		return nil, err
-	}
-	// check if connection is still alive
-	if err = db.Ping(); err != nil {
-		return nil, err
-	}
-	return db, nil
 }
 
 func main() {
@@ -72,22 +59,4 @@ func main() {
 
 	err = srv.ListenAndServe()
 	errorLog.Fatal(err)
-}
-
-// define an application struct to hold application-wide dependencies
-type application struct {
-	errorLog *log.Logger
-	infoLog  *log.Logger
-}
-
-func openDB(DBDriver string, DBSource string) (*sql.DB, error) {
-	db, err := sql.Open(DBDriver, DBSource)
-	if err != nil {
-		return nil, err
-	}
-	// check if connection is still alive
-	if err = db.Ping(); err != nil {
-		return nil, err
-	}
-	return db, nil
 }
