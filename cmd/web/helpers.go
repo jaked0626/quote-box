@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"fmt"
 	"net/http"
 	"runtime/debug"
@@ -38,11 +39,16 @@ func (app *application) render(w http.ResponseWriter, status int, page string, d
 		return
 	}
 
-	w.WriteHeader(status)
-
-	err := templateSet.ExecuteTemplate(w, "base", data)
+	// write response to buffer first to see if it compiles without error
+	buf := new(bytes.Buffer)
+	err := templateSet.ExecuteTemplate(buf, "base", data)
 	if err != nil {
 		app.serverError(w, err)
 		return
 	}
+
+	// if the above succeeds, we can return a successful header status and write
+	// to the http response writer
+	w.WriteHeader(status)
+	buf.WriteTo(w)
 }
