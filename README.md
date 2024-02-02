@@ -77,3 +77,5 @@ This structure cleanly separates Go and non-Go assets. Further, it scales nicely
 - check tables in database using `\dt+`
 - `curl -iL -X POST 'http://localhost:4000/snippet/create?title=test&content=test&expires=7'`
 - wgo run ./cmd/web -addr=":4000" -dsn="postgresql://web:secret@localhost:5432/snippet_db?sslmode=disable"
+
+- use form-encoding on thunderclient

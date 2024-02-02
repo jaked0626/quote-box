@@ -9,6 +9,8 @@ import (
 type Snippet struct {
 	ID      int
 	Title   string
+	Author  string
+	Work    string
 	Content string
 	Created time.Time
 	Expires time.Time
@@ -18,16 +20,18 @@ type SnippetModel struct {
 	DB *sql.DB
 }
 
-func (m *SnippetModel) Insert(title string, content string, expires int) (id int, err error) {
+func (m *SnippetModel) Insert(title string, author string, work string, content string, expires int) (id int, err error) {
 	id = -1
-	qry := `INSERT INTO snippets (title, content, created, expires) VALUES (
+	qry := `INSERT INTO snippets (title, author, work, content, created, expires) VALUES (
 			 $1,
 			 $2,
+			 $3,
+			 $4,
 			 CURRENT_TIMESTAMP,
-			 CURRENT_TIMESTAMP + $3 * INTERVAL '1 day'
+			 CURRENT_TIMESTAMP + $5 * INTERVAL '1 day'
 			 ) RETURNING id;`
 
-	row := m.DB.QueryRow(qry, title, content, expires)
+	row := m.DB.QueryRow(qry, title, author, work, content, expires)
 	err = row.Scan(&id)
 	if err != nil {
 		return
@@ -38,14 +42,14 @@ func (m *SnippetModel) Insert(title string, content string, expires int) (id int
 
 func (m *SnippetModel) Get(id int) (s *Snippet, err error) {
 	// query db
-	qry := `SELECT id, title, content, created, expires
+	qry := `SELECT *
 	FROM snippets
 	WHERE expires > CURRENT_TIMESTAMP AND id = $1; `
 	row := m.DB.QueryRow(qry, id)
 
 	// unmarshal
 	s = &Snippet{}
-	err = row.Scan(&s.ID, &s.Title, &s.Content, &s.Created, &s.Expires)
+	err = row.Scan(&s.ID, &s.Title, &s.Author, &s.Work, &s.Content, &s.Created, &s.Expires)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			err = ErrNoRecord
@@ -57,7 +61,7 @@ func (m *SnippetModel) Get(id int) (s *Snippet, err error) {
 
 func (m *SnippetModel) List(limit int) (snippets []*Snippet, err error) {
 	// query db
-	qry := `SELECT id, title, content, created, expires
+	qry := `SELECT *
 	FROM snippets
 	WHERE expires > CURRENT_TIMESTAMP
 	ORDER BY created DESC
@@ -72,7 +76,7 @@ func (m *SnippetModel) List(limit int) (snippets []*Snippet, err error) {
 	snippets = []*Snippet{}
 	for rows.Next() {
 		s := &Snippet{}
-		err = rows.Scan(&s.ID, &s.Title, &s.Content, &s.Created, &s.Expires)
+		err = rows.Scan(&s.ID, &s.Title, &s.Author, &s.Work, &s.Content, &s.Created, &s.Expires)
 		if err != nil {
 			return nil, err
 		}

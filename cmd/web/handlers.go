@@ -97,21 +97,22 @@ func (app *application) snippetCreatePost(w http.ResponseWriter, r *http.Request
 		app.badRequest(w)
 	}
 	title := r.PostForm.Get("title")
-	// author := r.PostForm.Get("author")
-	// work := r.PostForm.Get("work")
+	author := r.PostForm.Get("author")
+	work := r.PostForm.Get("work")
 	content := r.PostForm.Get("content")
 	expires, err := strconv.Atoi(r.PostForm.Get("expires"))
+	app.infoLog.Println(expires)
 	if err != nil {
 		app.badRequest(w)
 		return
 	}
 
-	id, err := app.snippets.Insert(title, content, expires)
+	id, err := app.snippets.Insert(title, author, work, content, expires)
 	if err != nil {
 		app.serverError(w, err)
 		return
 	}
 
-	http.Redirect(w, r, fmt.Sprintf("/snippet/view?id=%d", id), http.StatusSeeOther)
+	http.Redirect(w, r, fmt.Sprintf("/snippet/view/%d", id), http.StatusSeeOther)
 	return
 }
