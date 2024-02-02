@@ -2,55 +2,74 @@ package main
 
 import (
 	"database/sql"
-	"flag"
+	"html/template"
 	"log"
 	"net/http"
 	"os"
 
 	_ "github.com/jackc/pgx/v5/stdlib"
-	"github.com/jaked0626/snippetbox/internal/util"
+	"github.com/jaked0626/snippetbox/internal/config"
+	"github.com/jaked0626/snippetbox/internal/db/dbutils"
+	"github.com/jaked0626/snippetbox/internal/db/models"
 )
 
+// define an application struct to hold application-wide dependencies
+type application struct {
+	errorLog *log.Logger
+	infoLog  *log.Logger
+	snippets *models.SnippetModel
+	cache    map[string]*template.Template
+}
+
+func openDB(DBDriver string, DBSource string) (*sql.DB, error) {
+	db, err := sql.Open(DBDriver, DBSource)
+	if err != nil {
+		return nil, err
+	}
+	// check if connection is still alive
+	if err = db.Ping(); err != nil {
+		return nil, err
+	}
+	return db, nil
+}
+
 func main() {
-	// Define a new command-line flag with the name 'addr', a default value of ":4000"
-	addr := flag.String("addr", ":4000", "HTTP network address")
+	// BEST PRACTICE: all fatal or panic error logs should be called from within main
 
-	// Parse commandline flags passed. -addr flag value will be assigned to addr variable.
-	flag.Parse()
-
-	// log.Lshortfile flag to include relevant file name and line number
+	config := config.LoadConfig()
 	infoLog := log.New(os.Stdout, "INFO\t", log.Ldate|log.Ltime)
 	errorLog := log.New(os.Stderr, "ERROR\t", log.Ldate|log.Ltime|log.Lshortfile)
 
-	// initialize application struct
-	app := &application{
-		errorLog: errorLog,
-		infoLog:  infoLog,
-	}
-
-	// load config
-	config, err := util.LoadConfig("./")
+	// only open in main to save connection resources
+	db, err := dbutils.OpenDB(config.DBDriver, config.DBSource)
 	if err != nil {
-		app.errorLog.Fatal(err)
-	}
-
-	// open database connection pool (only in main to save connection resources)
-	db, err := openDB(config.DBDriver, config.DBSource)
-	if err != nil {
-		app.errorLog.Fatal(err)
+		errorLog.Fatal(err)
 	}
 	defer db.Close()
 
-	// Initialize a new http.Server struct.
-	srv := &http.Server{
-		Addr:     *addr,
-		ErrorLog: errorLog,
-		Handler:  app.routeMux(), // returns mux
+	// caching
+	cache, err := newTemplateCache()
+
+	if err != nil {
+		errorLog.Printf("Cache cannot be initialized: %v", err)
 	}
 
-	infoLog.Printf("Starting server on %s", *addr)
+	// application struct holds application wide variables
+	app := &application{
+		errorLog: errorLog,
+		infoLog:  infoLog,
+		snippets: &models.SnippetModel{DB: db},
+		cache:    cache,
+	}
 
-	// mux is treated as a chained interface
+	srv := &http.Server{
+		Addr:     config.Addr,
+		ErrorLog: errorLog,
+		Handler:  app.routeMux(),
+	}
+
+	infoLog.Printf("Starting server on %s", config.Addr)
+
 	err = srv.ListenAndServe()
 	errorLog.Fatal(err)
 }
