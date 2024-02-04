@@ -60,7 +60,7 @@ h2 {
 a {
     color: #f05d5e;
     text-decoration: none;
-    text-shadow: 1px 1px #073b4c;
+    text-shadow: 0.5px 0.5px #073b4c;
 }
 
 a:hover {
@@ -107,7 +107,7 @@ nav {
 nav a {
     margin-right: 1.5em;
     display: inline-block;
-    text-shadow: 1px 1px #f05d5e;
+    text-shadow: 0.5px 0.5px #f05d5e;
 }
 
 nav form {
@@ -153,7 +153,7 @@ footer {
 
 a.button,
 input[type="submit"] {
-    background-color: #62cb31;
+    background-color: #073b4c;
     border-radius: 3px;
     color: #ffffff;
     padding: 18px 27px;
@@ -165,7 +165,7 @@ input[type="submit"] {
 
 a.button:hover,
 input[type="submit"]:hover {
-    background-color: #4eb722;
+    background-color: #f05d5e;
     color: #ffffff;
     cursor: pointer;
     text-decoration: none;
@@ -220,19 +220,18 @@ form label {
 textarea {
     padding: 18px;
     width: 100%;
-    height: 266px;
 }
 
 button {
     background: none;
     padding: 0;
     border: none;
-    color: #62cb31;
+    color: #073b4c;
     text-decoration: none;
 }
 
 button:hover {
-    color: #4eb722;
+    color: #f05d5e;
     text-decoration: underline;
     cursor: pointer;
 }
@@ -244,9 +243,15 @@ button:hover {
 }
 
 .snippet pre {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
     padding: 18px;
+    margin: 0;
     border-top: 1px solid #e4e5e7;
-    border-bottom: 1px solid #e4e5e7;
+    width: 100%;
+    white-space: normal;
+    /* border-bottom: 1px solid #e4e5e7; */
 }
 
 .snippet .metadata {
@@ -254,6 +259,14 @@ button:hover {
     color: #6a6c6f;
     padding: 0.75em 18px;
     overflow: auto;
+}
+
+.snippet .quoteinfo {
+    background-color: inherit;
+    display: flex;  
+    width: 100%;
+    flex-direction: row-reverse;
+    padding: 18px;
 }
 
 .snippet .metadata span {
@@ -276,11 +289,11 @@ button:hover {
     float: right;
 }
 
-div.flash {
+div.toast {
     color: #ffffff;
     font-weight: bold;
-    background-color: #34495e;
-    padding: 18px;
+    background-color: #f05d5e;
+    padding: 10px;
     margin-bottom: 36px;
     text-align: center;
 }

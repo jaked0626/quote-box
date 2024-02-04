@@ -57,6 +57,7 @@ func (app *application) render(w http.ResponseWriter, status int, page string, d
 func (app *application) newTemplateData(r *http.Request) (data *templateData) {
 	data = &templateData{
 		CurrentYear: time.Now().Year(),
+		Toast:       app.sessionManager.PopString(r.Context(), "toast"),
 	}
 	return
 }

@@ -6,12 +6,14 @@
     <table>
         <tr>
             <th>Title</th>
+            <th>Author</th>
             <th>Created</th>
             <th>Id</th>
         </tr>
         {{range .Snippets}}
         <tr>
             <td><a href='/snippet/view/{{.ID}}'>{{.Title}}</a></td> 
+            <td>{{.Author}}</td>
             <td>{{formatDate .Created}}</td>
             <td>#{{.ID}}</td>
         </tr>

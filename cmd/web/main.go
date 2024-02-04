@@ -5,29 +5,31 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"time"
 
-	_ "github.com/jackc/pgx/v5/stdlib"
+	"github.com/alexedwards/scs/postgresstore"
+	"github.com/alexedwards/scs/v2"
 	"github.com/jaked0626/snippetbox/internal/config"
 	"github.com/jaked0626/snippetbox/internal/db/dbutils"
 	"github.com/jaked0626/snippetbox/internal/db/models"
+	_ "github.com/lib/pq"
 )
 
 // define an application struct to hold application-wide dependencies
 type application struct {
-	errorLog *log.Logger
-	infoLog  *log.Logger
-	snippets *models.SnippetModel
-	cache    map[string]*template.Template
+	errorLog       *log.Logger
+	infoLog        *log.Logger
+	snippets       *models.SnippetModel
+	cache          map[string]*template.Template
+	sessionManager *scs.SessionManager
 }
 
 func main() {
-	// BEST PRACTICE: all fatal or panic error logs should be called from within main
-
 	config := config.LoadConfig()
 	infoLog := log.New(os.Stdout, "INFO\t", log.Ldate|log.Ltime)
 	errorLog := log.New(os.Stderr, "ERROR\t", log.Ldate|log.Ltime|log.Lshortfile)
 
-	// only open in main to save connection resources
+	// database: only in main to save connection resources
 	db, err := dbutils.OpenDB(config.DBDriver, config.DBSource)
 	if err != nil {
 		errorLog.Fatal(err)
@@ -36,19 +38,25 @@ func main() {
 
 	// caching
 	cache, err := newTemplateCache()
-
 	if err != nil {
 		errorLog.Printf("Cache cannot be initialized: %v", err)
 	}
 
-	// application struct holds application wide variables
+	// session management
+	sessionManager := scs.New()
+	sessionManager.Store = postgresstore.New(db)
+	sessionManager.Lifetime = 12 * time.Hour
+
+	// application wide dependencies
 	app := &application{
-		errorLog: errorLog,
-		infoLog:  infoLog,
-		snippets: &models.SnippetModel{DB: db},
-		cache:    cache,
+		errorLog:       errorLog,
+		infoLog:        infoLog,
+		snippets:       &models.SnippetModel{DB: db},
+		cache:          cache,
+		sessionManager: sessionManager,
 	}
 
+	// server
 	srv := &http.Server{
 		Addr:     config.Addr,
 		ErrorLog: errorLog,

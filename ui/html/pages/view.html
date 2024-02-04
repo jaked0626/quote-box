@@ -7,7 +7,14 @@
             <strong>{{.Title}}</strong>
             <span>#{{.ID}}</span>
         </div>
-        <pre><code>{{.Content}}</code></pre>
+        <pre>
+            <code>"{{.Content}}"</code>
+        </pre>
+        <div class="quoteinfo">
+            <span>
+                {{.Author}} - <i>{{.Work}}</i>
+            </span>
+        </div>
         <div class="metadata">
             <time>Created: {{formatDate .Created}}</time>
             <time>Expires: {{formatDate .Expires}}</time>

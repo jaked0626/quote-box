@@ -9,6 +9,9 @@ import (
 
 func (app *application) routeMux() http.Handler {
 	router := httprouter.New()
+	router.NotFound = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		app.notFound(w)
+	})
 
 	// file server for static files in ui/static/
 	// need to strip prefix to avoid duplications since our requests will include
@@ -16,17 +19,14 @@ func (app *application) routeMux() http.Handler {
 	fileServer := http.FileServer(http.Dir("./ui/static/"))
 	router.Handler(http.MethodGet, "/static/*filepath", http.StripPrefix("/static", fileServer))
 
-	router.NotFound = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		app.notFound(w)
-	})
+	// handler chain for dynamic pages
+	dynamic := alice.New(app.sessionManager.LoadAndSave)
 
-	// HandleFunc coerces functions into interfaces that satisfy
-	// the method ServeHTTP()
-	router.HandlerFunc(http.MethodGet, "/", app.home)
-	router.HandlerFunc(http.MethodGet, "/snippet/view/:id", app.snippetView)
-	router.HandlerFunc(http.MethodGet, "/snippet/list/:limit", app.snippetList)
-	router.HandlerFunc(http.MethodGet, "/snippet/create", app.snippetCreate)
-	router.HandlerFunc(http.MethodPost, "/snippet/create", app.snippetCreatePost)
+	router.Handler(http.MethodGet, "/", dynamic.ThenFunc(app.home))
+	router.Handler(http.MethodGet, "/snippet/view/:id", dynamic.ThenFunc(app.snippetView))
+	router.Handler(http.MethodGet, "/snippet/list/:limit", dynamic.ThenFunc(app.snippetList))
+	router.Handler(http.MethodGet, "/snippet/create", dynamic.ThenFunc(app.snippetCreate))
+	router.Handler(http.MethodPost, "/snippet/create", dynamic.ThenFunc(app.snippetCreatePost))
 
 	// define the standard handler/middlware chain for our requests
 	// recoverPanic executed first to pick up any panics thrown by the server

@@ -6,7 +6,7 @@
     <meta charset='utf-8'>
     <title>{{template "title" .}} - Quotebox</title>
     <!-- link to CSS stylesheet and favicon and font-->
-    <link rel="stylesheet" href="/static/css/main.css?v=13">
+    <link rel="stylesheet" href="/static/css/main.css?v=21">
     <link rel="shortcut icon" href="/static/img/favicon.ico" type="image/x-icon">
     <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Ubuntu+Mono:400,700">
 </head>
@@ -18,7 +18,10 @@
     <!-- invoke the navigation template -->
     {{template "nav" .}}
     <main>
-        <!-- invoke main template, . is dynamic data passed -->
+        <!-- Display the toast message if one exists -->
+        {{with .Toast}}
+            <div class='toast'>{{.}}</div>
+        {{end}}
         {{template "main" .}}
     </main>
     <footer>Copyright {{.CurrentYear}} <a href='https://jaked0626.github.io/digital-biz-card/'>Jake Underland</a></footer>
