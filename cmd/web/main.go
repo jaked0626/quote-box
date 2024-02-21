@@ -61,10 +61,18 @@ func main() {
 		Addr:     config.Addr,
 		ErrorLog: errorLog,
 		Handler:  app.routeMux(),
+		IdleTimeout: 2 * time.Minute, // verbose but for some cursed reason IdleTimeout defaults to the same value as ReadTimeout!? 
+		ReadTimeout: 5 * time.Second, 
+		WriteTimeout: 10 * time.Second,
 	}
 
 	infoLog.Printf("Starting server on %s", config.Addr)
 
-	err = srv.ListenAndServe()
+	// tls: only use elliptic curves with assembly implementations for performance
+	tlsConfig := &tls.Config{
+		CurvePreferences: []tls.CurveID{tls.X25519, tls.CurveP256},
+	}
+
+	err = srv.ListenAndServeTLS("./tls/cert.pem", "./tls/key.pem")
 	errorLog.Fatal(err)
 }
