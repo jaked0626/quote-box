@@ -2,10 +2,13 @@ package main
 
 import (
 	"bytes"
+	"errors"
 	"fmt"
 	"net/http"
 	"runtime/debug"
 	"time"
+
+	"github.com/go-playground/form/v4"
 )
 
 // serverError: writes an error message and stack trace to errorLog,
@@ -35,7 +38,7 @@ func (app *application) badRequest(w http.ResponseWriter) {
 func (app *application) render(w http.ResponseWriter, status int, page string, data *templateData) {
 	templateSet, ok := app.cache[page]
 	if !ok {
-		err := fmt.Errorf("Error: the template %s does not exist in cache", page)
+		err := fmt.Errorf("error: the template %s does not exist in cache", page)
 		app.serverError(w, err)
 		return
 	}
@@ -60,4 +63,22 @@ func (app *application) newTemplateData(r *http.Request) (data *templateData) {
 		Toast:       app.sessionManager.PopString(r.Context(), "toast"),
 	}
 	return
+}
+
+func (app *application) decodePostForm(r *http.Request, dst any) error {
+	err := r.ParseForm()
+	if err != nil {
+		return err
+	}
+
+	err = app.formDecoder.Decode(dst, r.PostForm)
+	if err != nil {
+		// panic if we are not using the correct form type.
+		var invalidDecoderError *form.InvalidDecoderError
+		if errors.As(err, &invalidDecoderError) {
+			panic(err)
+		}
+		return err
+	}
+	return nil
 }

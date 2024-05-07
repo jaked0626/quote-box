@@ -1,6 +1,7 @@
 package main
 
 import (
+	"crypto/tls"
 	"html/template"
 	"log"
 	"net/http"
@@ -9,6 +10,7 @@ import (
 
 	"github.com/alexedwards/scs/postgresstore"
 	"github.com/alexedwards/scs/v2"
+	"github.com/go-playground/form/v4"
 	"github.com/jaked0626/snippetbox/internal/config"
 	"github.com/jaked0626/snippetbox/internal/db/dbutils"
 	"github.com/jaked0626/snippetbox/internal/db/models"
@@ -20,7 +22,9 @@ type application struct {
 	errorLog       *log.Logger
 	infoLog        *log.Logger
 	snippets       *models.SnippetModel
+	users          *models.UserModel
 	cache          map[string]*template.Template
+	formDecoder    *form.Decoder
 	sessionManager *scs.SessionManager
 }
 
@@ -42,6 +46,9 @@ func main() {
 		errorLog.Printf("Cache cannot be initialized: %v", err)
 	}
 
+	// form decoding
+	formDecoder := form.NewDecoder()
+
 	// session management
 	sessionManager := scs.New()
 	sessionManager.Store = postgresstore.New(db)
@@ -52,26 +59,29 @@ func main() {
 		errorLog:       errorLog,
 		infoLog:        infoLog,
 		snippets:       &models.SnippetModel{DB: db},
+		users:          &models.UserModel{DB: db},
 		cache:          cache,
+		formDecoder:    formDecoder,
 		sessionManager: sessionManager,
 	}
-
-	// server
-	srv := &http.Server{
-		Addr:     config.Addr,
-		ErrorLog: errorLog,
-		Handler:  app.routeMux(),
-		IdleTimeout: 2 * time.Minute, // verbose but for some cursed reason IdleTimeout defaults to the same value as ReadTimeout!? 
-		ReadTimeout: 5 * time.Second, 
-		WriteTimeout: 10 * time.Second,
-	}
-
-	infoLog.Printf("Starting server on %s", config.Addr)
 
 	// tls: only use elliptic curves with assembly implementations for performance
 	tlsConfig := &tls.Config{
 		CurvePreferences: []tls.CurveID{tls.X25519, tls.CurveP256},
 	}
+
+	// server
+	srv := &http.Server{
+		Addr:         config.Addr,
+		ErrorLog:     errorLog,
+		Handler:      app.routeMux(),
+		IdleTimeout:  2 * time.Minute, // verbose but for some cursed reason IdleTimeout defaults to the same value as ReadTimeout!?
+		ReadTimeout:  5 * time.Second,
+		WriteTimeout: 10 * time.Second,
+		TLSConfig:    tlsConfig,
+	}
+
+	infoLog.Printf("Starting server on %s", config.Addr)
 
 	err = srv.ListenAndServeTLS("./tls/cert.pem", "./tls/key.pem")
 	errorLog.Fatal(err)

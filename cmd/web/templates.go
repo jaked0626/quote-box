@@ -12,7 +12,7 @@ type templateData struct {
 	Snippet     *models.Snippet
 	Snippets    []*models.Snippet
 	CurrentYear int
-	Form        *SnippetCreateForm
+	Form        any
 	Toast       string
 }
 

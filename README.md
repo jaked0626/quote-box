@@ -21,3 +21,7 @@ Feature ideas:
 - wgo run ./cmd/web -addr=":4000" -dsn="postgresql://web:secret@localhost:5432/snippet_db?sslmode=disable"
 
 - use form-encoding on thunderclient
+
+
+# TODO: 
+- default values for author, work are not working 
