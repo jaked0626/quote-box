@@ -21,7 +21,6 @@ type SnippetModel struct {
 }
 
 func (m *SnippetModel) Insert(title string, author string, work string, content string, expires int) (id int, err error) {
-	id = -1
 	qry := `INSERT INTO snippets (title, author, work, content, created, expires) VALUES (
 			 $1,
 			 $2,
@@ -34,10 +33,10 @@ func (m *SnippetModel) Insert(title string, author string, work string, content 
 	row := m.DB.QueryRow(qry, title, author, work, content, expires)
 	err = row.Scan(&id)
 	if err != nil {
-		return
+		return -1, err
 	}
 
-	return
+	return id, err
 }
 
 func (m *SnippetModel) Get(id int) (s *Snippet, err error) {
@@ -56,7 +55,7 @@ func (m *SnippetModel) Get(id int) (s *Snippet, err error) {
 		}
 		return nil, err
 	}
-	return
+	return s, nil
 }
 
 func (m *SnippetModel) List(limit int) (snippets []*Snippet, err error) {
@@ -87,5 +86,5 @@ func (m *SnippetModel) List(limit int) (snippets []*Snippet, err error) {
 		return nil, err
 	}
 
-	return
+	return snippets, nil
 }

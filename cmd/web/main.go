@@ -1,7 +1,6 @@
 package main
 
 import (
-	"crypto/tls"
 	"html/template"
 	"log"
 	"net/http"
@@ -66,9 +65,9 @@ func main() {
 	}
 
 	// tls: only use elliptic curves with assembly implementations for performance
-	tlsConfig := &tls.Config{
-		CurvePreferences: []tls.CurveID{tls.X25519, tls.CurveP256},
-	}
+	// tlsConfig := &tls.Config{
+	// 	CurvePreferences: []tls.CurveID{tls.X25519, tls.CurveP256},
+	// }
 
 	// server
 	srv := &http.Server{
@@ -78,11 +77,12 @@ func main() {
 		IdleTimeout:  2 * time.Minute, // verbose but for some cursed reason IdleTimeout defaults to the same value as ReadTimeout!?
 		ReadTimeout:  5 * time.Second,
 		WriteTimeout: 10 * time.Second,
-		TLSConfig:    tlsConfig,
+		// TLSConfig:    tlsConfig,
 	}
 
 	infoLog.Printf("Starting server on %s", config.Addr)
 
-	err = srv.ListenAndServeTLS("./tls/cert.pem", "./tls/key.pem")
+	// err = srv.ListenAndServeTLS("./tls/cert.pem", "./tls/key.pem")
+	err = srv.ListenAndServe()
 	errorLog.Fatal(err)
 }

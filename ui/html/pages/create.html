@@ -2,39 +2,41 @@
 
 {{define "main"}}
 <form action="/snippet/create" method="POST">
+    <!-- CSRF Token limits requests to those sent from within this page -->
+    <input type="hidden" name="csrf_token" value="{{.CSRFToken}}">
     <div>
         <label><strong>Title:</strong></label>
         {{with .Form.FieldErrors.title}}
-            <label class='error'>{{.}}</label> 
+        <label class='error'>{{.}}</label>
         {{end}}
         <input type='text' name='title' value='{{.Form.Title}}'>
-    </div> 
+    </div>
     <div>
         <label><strong>Author:</strong></label>
         <input type='text' name='author'>
-    </div> 
+    </div>
     <div>
         <label><strong>Work:</strong></label>
         <input type='text' name='work'>
-    </div> 
+    </div>
     <div>
         <label><strong>Content:</strong></label>
         {{with .Form.FieldErrors.content}}
-            <label class='error'>{{.}}</label> 
+        <label class='error'>{{.}}</label>
         {{end}}
-        <textarea name='content'>{{.Form.Content}}</textarea> 
+        <textarea name='content'>{{.Form.Content}}</textarea>
     </div>
     <div>
         <label>Delete in:</label>
-        <input type='radio' name='expires' value='365' {{if (eq .Form.Expires 365)}}checked{{end}}> One Year 
+        <input type='radio' name='expires' value='365' {{if (eq .Form.Expires 365)}}checked{{end}}> One Year
         <input type='radio' name='expires' value='7' {{if (eq .Form.Expires 7)}}checked{{end}}> One Week
         <input type='radio' name='expires' value='1' {{if (eq .Form.Expires 1)}}checked{{end}}> One Day
-    </div> 
+    </div>
     <div>
         <!-- Submit sends a post request to /snippet/create with form content
         Because of our router, we already have a handler for X POST /snippet/create
         no additional routing necessary -->
-        <input type='submit' value='Publish quote'> 
+        <input type='submit' value='Publish quote'>
     </div>
 </form>
 {{end}}

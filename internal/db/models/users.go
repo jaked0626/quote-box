@@ -25,7 +25,7 @@ type UserModel struct {
 func (m *UserModel) Insert(name string, email string, password string) (err error) {
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	if err != nil {
-		return
+		return err
 	}
 
 	qry := `INSERT INTO users (name, email, hashed_password, created) VALUES (
@@ -77,7 +77,9 @@ func (m *UserModel) Authenticate(email string, password string) (id int, err err
 }
 
 func (m *UserModel) Exists(id int) (exists bool, err error) {
-	exists = false
-	err = nil
-	return
+	qry := "SELECT EXISTS(SELECT true FROM users WHERE id = $1)"
+	row := m.DB.QueryRow(qry, id)
+	err = row.Scan(&exists)
+
+	return exists, err
 }

@@ -1,5 +1,6 @@
 #!/bin/bash 
 
+# using this because makefile does not recognize the wgo command
 if [ -f app.env ]
 then
   export $(cat app.env | xargs)

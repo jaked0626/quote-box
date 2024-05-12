@@ -1,6 +1,8 @@
 {{define "title"}}Login{{end}}
 {{define "main"}}
 <form action='/user/login' method='POST' novalidate>
+    <!-- CSRFToken to limit requests to those sent from within this page -->
+    <input type="hidden" name="csrf_token" value="{{.CSRFToken}}">
     <!-- Notice that here we are looping over the NonFieldErrors and displaying them, if any exist -->
     {{range .Form.NonFieldErrors}}
     <div class='error'>{{.}}</div>

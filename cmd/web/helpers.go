@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/go-playground/form/v4"
+	"github.com/justinas/nosurf"
 )
 
 // serverError: writes an error message and stack trace to errorLog,
@@ -59,8 +60,10 @@ func (app *application) render(w http.ResponseWriter, status int, page string, d
 
 func (app *application) newTemplateData(r *http.Request) (data *templateData) {
 	data = &templateData{
-		CurrentYear: time.Now().Year(),
-		Toast:       app.sessionManager.PopString(r.Context(), "toast"),
+		CurrentYear:     time.Now().Year(),
+		Toast:           app.sessionManager.PopString(r.Context(), "toast"),
+		IsAuthenticated: app.isAuthenticated(r),
+		CSRFToken:       nosurf.Token(r), // token to allow valid requests. CSRF blocks for malicious requests.
 	}
 	return
 }
@@ -81,4 +84,13 @@ func (app *application) decodePostForm(r *http.Request, dst any) error {
 		return err
 	}
 	return nil
+}
+
+func (app *application) isAuthenticated(r *http.Request) (isAuthenticated bool) {
+	isAuthenticated, ok := r.Context().Value(isAuthenticatedContextKey).(bool)
+	if !ok {
+		return false
+	}
+
+	return isAuthenticated
 }
