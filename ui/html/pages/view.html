@@ -1,24 +1,25 @@
-{{define "title"}}Snippet #{{.Snippet.ID}}{{end}} 
+{{define "title"}}Snippet #{{.Snippet.ID}}{{end}}
 
 {{define "main"}}
-    {{with .Snippet}}
-    <div class="snippet">
-        <div class="metadata">
-            <strong>{{.Title}}</strong>
-            <span>#{{.ID}}</span>
-        </div>
-        <pre>
+{{with .Snippet}}
+<div class="snippet">
+    <div class="metadata">
+        <strong>{{.Title}}</strong>
+        <span>#{{.ID}}</span>
+    </div>
+    <pre>
             <code>"{{.Content}}"</code>
         </pre>
-        <div class="quoteinfo">
-            <span>
-                - {{.Author}}, <i>{{.Work}}</i>
-            </span>
-        </div>
-        <div class="metadata">
-            <time>Created: {{formatDate .Created}}</time>
-            <time>Expires: {{formatDate .Expires}}</time>
-        </div>
+    <div class="quoteinfo">
+        <span>
+            - {{.Author}}, <i>{{.Work}}</i>
+        </span>
     </div>
-    {{end}}
+    <div class="metadata">
+        <time>{{formatDate .Created}}</time>
+        <span>Submitted User: #{{.UserID}}</span>
+        <!-- <time>Expires: {{formatDate .Expires}}</time> -->
+    </div>
+</div>
+{{end}}
 {{end}}

@@ -102,8 +102,16 @@ func (app *application) snippetCreatePost(w http.ResponseWriter, r *http.Request
 		app.render(w, http.StatusUnprocessableEntity, "create.html", data)
 		return
 	}
-	app.infoLog.Println(form.Title, form.Author, form.Work, form.Content)
-	id, err := app.snippets.Insert(form.Title, form.Author, form.Work, form.Content, form.Expires)
+
+	app.infoLog.Println("Creating following quote: ", form.Title, form.Author, form.Work, form.Content)
+
+	// get user id from session
+	userId := app.sessionManager.GetInt(r.Context(), "authenticatedUserID")
+	if userId == 0 {
+		app.serverError(w, errors.New("unauthenticated user"))
+	}
+
+	id, err := app.snippets.Insert(form.Title, form.Author, form.Work, form.Content, form.Expires, userId)
 	if err != nil {
 		app.serverError(w, err)
 		return

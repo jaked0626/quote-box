@@ -14,23 +14,25 @@ type Snippet struct {
 	Content string
 	Created time.Time
 	Expires time.Time
+	UserID  int
 }
 
 type SnippetModel struct {
 	DB *sql.DB
 }
 
-func (m *SnippetModel) Insert(title string, author string, work string, content string, expires int) (id int, err error) {
-	qry := `INSERT INTO snippets (title, author, work, content, created, expires) VALUES (
+func (m *SnippetModel) Insert(title string, author string, work string, content string, expires int, user_id int) (id int, err error) {
+	qry := `INSERT INTO snippets (title, author, work, content, created, expires, user_id) VALUES (
 			 $1,
 			 $2,
 			 $3,
 			 $4,
 			 CURRENT_TIMESTAMP,
-			 CURRENT_TIMESTAMP + $5 * INTERVAL '1 day'
+			 CURRENT_TIMESTAMP + $5 * INTERVAL '1 day',
+			 $6
 			 ) RETURNING id;`
 
-	row := m.DB.QueryRow(qry, title, author, work, content, expires)
+	row := m.DB.QueryRow(qry, title, author, work, content, expires, user_id)
 	err = row.Scan(&id)
 	if err != nil {
 		return -1, err
@@ -48,7 +50,7 @@ func (m *SnippetModel) Get(id int) (s *Snippet, err error) {
 
 	// unmarshal
 	s = &Snippet{}
-	err = row.Scan(&s.ID, &s.Title, &s.Author, &s.Work, &s.Content, &s.Created, &s.Expires)
+	err = row.Scan(&s.ID, &s.Title, &s.Author, &s.Work, &s.Content, &s.Created, &s.Expires, &s.UserID)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			err = ErrNoRecord
@@ -75,7 +77,7 @@ func (m *SnippetModel) List(limit int) (snippets []*Snippet, err error) {
 	snippets = []*Snippet{}
 	for rows.Next() {
 		s := &Snippet{}
-		err = rows.Scan(&s.ID, &s.Title, &s.Author, &s.Work, &s.Content, &s.Created, &s.Expires)
+		err = rows.Scan(&s.ID, &s.Title, &s.Author, &s.Work, &s.Content, &s.Created, &s.Expires, &s.UserID)
 		if err != nil {
 			return nil, err
 		}
