@@ -7,14 +7,15 @@ import (
 )
 
 type Snippet struct {
-	ID      int
-	Title   string
-	Author  string
-	Work    string
-	Content string
-	Created time.Time
-	Expires time.Time
-	UserID  int
+	ID       int
+	Title    string
+	Author   string
+	Work     string
+	Content  string
+	Created  time.Time
+	Expires  time.Time
+	UserID   int
+	UserName string
 }
 
 type SnippetModel struct {
@@ -43,14 +44,24 @@ func (m *SnippetModel) Insert(title string, author string, work string, content 
 
 func (m *SnippetModel) Get(id int) (s *Snippet, err error) {
 	// query db
-	qry := `SELECT *
+	qry := `SELECT 
+		snippets.id,
+		snippets.title,
+		snippets.author,
+		snippets.work,
+		snippets.content,
+		snippets.created,
+		snippets.expires,
+		snippets.user_id,
+		users.name
 	FROM snippets
-	WHERE expires > CURRENT_TIMESTAMP AND id = $1; `
+	LEFT JOIN users ON snippets.user_id = users.id
+	WHERE expires > CURRENT_TIMESTAMP AND snippets.id = $1;`
 	row := m.DB.QueryRow(qry, id)
 
 	// unmarshal
 	s = &Snippet{}
-	err = row.Scan(&s.ID, &s.Title, &s.Author, &s.Work, &s.Content, &s.Created, &s.Expires, &s.UserID)
+	err = row.Scan(&s.ID, &s.Title, &s.Author, &s.Work, &s.Content, &s.Created, &s.Expires, &s.UserID, &s.UserName)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			err = ErrNoRecord
