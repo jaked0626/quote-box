@@ -153,6 +153,27 @@ func (app *application) snippetList(w http.ResponseWriter, r *http.Request) {
 	w.Write(res)
 }
 
+/* My Snippets */
+
+func (app *application) snippetViewMine(w http.ResponseWriter, r *http.Request) {
+  userId := app.sessionManager.GetInt(r.Context(), "authenticatedUserId")
+  if userId <= 0 {
+    app.serverError(w, errors.New("unauthenticated user"))
+    return
+  }
+
+  snippets, err := app.snippets.ListUser(userId)
+  if err != nil {
+    app.serverError(w, err)
+    return
+  }
+
+  data := app.newTemplateData(r)
+	data.Snippets = snippets
+
+	app.render(w, http.StatusOK, "home.html", data)
+}
+
 /* User Signup */
 
 type userSignUpForm struct {

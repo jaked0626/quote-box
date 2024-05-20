@@ -73,8 +73,18 @@ func (m *SnippetModel) Get(id int) (s *Snippet, err error) {
 
 func (m *SnippetModel) List(limit int) (snippets []*Snippet, err error) {
 	// query db
-	qry := `SELECT *
+	qry := `SELECT 
+    snippets.id,
+    snippets.title,
+    snippets.author,
+    snippets.work,
+    snippets.content,
+    snippets.created,
+    snippets.expires,
+    snippets.user_id,
+    users.name
 	FROM snippets
+  LEFT JOIN users ON snippets.user_id = users.id
 	WHERE expires > CURRENT_TIMESTAMP
 	ORDER BY created DESC
 	LIMIT $1`
@@ -88,7 +98,7 @@ func (m *SnippetModel) List(limit int) (snippets []*Snippet, err error) {
 	snippets = []*Snippet{}
 	for rows.Next() {
 		s := &Snippet{}
-		err = rows.Scan(&s.ID, &s.Title, &s.Author, &s.Work, &s.Content, &s.Created, &s.Expires, &s.UserID)
+		err = rows.Scan(&s.ID, &s.Title, &s.Author, &s.Work, &s.Content, &s.Created, &s.Expires, &s.UserID, &s.UserName)
 		if err != nil {
 			return nil, err
 		}
@@ -101,3 +111,47 @@ func (m *SnippetModel) List(limit int) (snippets []*Snippet, err error) {
 
 	return snippets, nil
 }
+
+func (m *SnippetModel) ListUser(userId int) (snippets []*Snippet, err error) {
+	// query db
+	qry := `SELECT 
+    snippets.id,
+    snippets.title,
+    snippets.author,
+    snippets.work,
+    snippets.content,
+    snippets.created,
+    snippets.expires,
+    snippets.user_id,
+    users.name
+	FROM snippets
+  LEFT JOIN users ON snippets.user_id = users.id
+	WHERE snippets.user_id = $1
+	ORDER BY created DESC`
+
+	rows, err := m.DB.Query(qry, userId)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	// unmarshal query results
+	snippets = []*Snippet{}
+	for rows.Next() {
+		s := &Snippet{}
+		err = rows.Scan(&s.ID, &s.Title, &s.Author, &s.Work, &s.Content, &s.Created, &s.Expires, &s.UserID, &s.UserName)
+		if err != nil {
+			return nil, err
+		}
+		snippets = append(snippets, s)
+	}
+
+	if err := rows.Err(); err != nil {
+    return nil, err
+  }
+  
+  return snippets, nil
+}
+
+
+

@@ -8,7 +8,6 @@
         <th>Title</th>
         <th>Author</th>
         <th>User</th>
-        <th>Id</th>
         <th>Created</th>
     </tr>
     {{range .Snippets}}
@@ -16,7 +15,6 @@
         <td><a href='/snippet/view/{{.ID}}'>{{.Title}}</a></td>
         <td>{{.Author}}</td>
         <td>{{.UserName}}</td>
-        <td>#{{.ID}}</td>
         <td>{{formatDate .Created}}</td>
     </tr>
     {{end}}

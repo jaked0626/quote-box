@@ -3,6 +3,7 @@
     <div>
         <a href='/'>Home</a>
         {{if .IsAuthenticated}}
+        <a href='/snippet/view/user/{ .User.UserID }'>My Content</a>
         <a href='/snippet/create'>Submit</a>
         {{end}}
     </div>
