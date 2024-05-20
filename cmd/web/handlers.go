@@ -153,14 +153,18 @@ func (app *application) snippetList(w http.ResponseWriter, r *http.Request) {
 	w.Write(res)
 }
 
-/* My Snippets */
+/* User Snippets */
 
-func (app *application) snippetViewMine(w http.ResponseWriter, r *http.Request) {
-  userId := app.sessionManager.GetInt(r.Context(), "authenticatedUserId")
-  if userId <= 0 {
-    app.serverError(w, errors.New("unauthenticated user"))
-    return
-  }
+func (app *application) snippetUser(w http.ResponseWriter, r *http.Request) {
+	params := httprouter.ParamsFromContext(r.Context())
+	userId, err := strconv.Atoi(params.ByName("userid"))
+	if err != nil {
+		app.badRequest(w)
+		return
+	} else if userId < 1 {
+		app.notFound(w)
+		return
+	}
 
   snippets, err := app.snippets.ListUser(userId)
   if err != nil {
@@ -172,6 +176,16 @@ func (app *application) snippetViewMine(w http.ResponseWriter, r *http.Request) 
 	data.Snippets = snippets
 
 	app.render(w, http.StatusOK, "home.html", data)
+}
+
+func (app *application) snippetMine(w http.ResponseWriter, r *http.Request) {
+  userId := app.sessionManager.GetInt(r.Context(), "authenticatedUserID")
+  if userId <= 0 {
+    app.serverError(w, errors.New("unauthenticated user"))
+    return
+  }
+
+	http.Redirect(w, r, fmt.Sprintf("/snippet/user/%d", userId), http.StatusSeeOther)
 }
 
 /* User Signup */
