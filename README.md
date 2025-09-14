@@ -6,8 +6,17 @@ Feature ideas:
 - Network visualization of similarities between user  
 - Word Map of posted quotes  
 
-# Hosting Postgres  
+# Prod Database stuff  
 - https://console.neon.tech/app/projects/curly-sea-40334847
+```bash
+brew install golang-migrate
+# migrate prod 
+make migrateup_prod
+```
+
+# Cost Control 
+- https://cloud.google.com/billing/docs/how-to/notify#cap_disable_billing_to_stop_usage
+
 
 # TIPS
 - All Fatal and Panic error logs should only be called from within main. Other errors should be passed up the stack.

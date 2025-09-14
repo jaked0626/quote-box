@@ -26,8 +26,14 @@ createdbrole:
 migrateup:
 	- migrate -path ./internal/db/migration/ -database ${DB_SOURCE} -verbose up
 
+migrateup_prod:
+	- migrate -path ./internal/db/migration/ -database ${DB_SOURCE_PROD} -verbose up
+
 migratedown:
 	- migrate -path ./internal/db/migration/ -database ${DB_SOURCE} -verbose down
+
+migratedown_prod:
+	- migrate -path ./internal/db/migration/ -database ${DB_SOURCE_PROD} -verbose down
 
 up:
 	- make container
@@ -52,5 +58,30 @@ down:
 
 dropdb:
 	docker exec -it snippet_pg dropdb ${DB_NAME}
+
+make_go_build:
+	go build -o ./build/server ./cmd/web 
+
+run_go_build: 
+	./build/server -addr=${HTTP_TARGET_ADDRESS} -dsn=${DB_SOURCE}
+
+build_docker:
+	docker build -t quotebox .
+
+run_docker:
+	docker run -p 4000:4000 --name quotebox_server quotebox --addr=${HTTP_TARGET_ADDRESS} --dsn="${DB_SOURCE_PROD}"
+
+clean_docker:
+	- docker stop quotebox_server && docker rm quotebox_server
+	- docker rmi quotebox
+
+test_docker:
+	- make clean_docker
+	- make build_docker
+	- make run_docker
+
+
+
+
 
 .PHONY: serve serve_reload serve_log startpg container createdb createdbrole dropdb up down migrateup migratedown

@@ -34,3 +34,5 @@ tmp/
 
 # tls 
 tls/
+# for mac 
+.DS_Store
